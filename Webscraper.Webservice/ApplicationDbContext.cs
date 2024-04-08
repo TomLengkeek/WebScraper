@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using WebScraper.Database.Entities;
+using WebScraper.Webservice.Entities;
+
 
 namespace WebScraper.Webservice;
 

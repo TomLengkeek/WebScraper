@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebScraper.Database.Entities;
+namespace WebScraper.Webservice.Entities;
 
 [Table("Notices")]
 public class Notice

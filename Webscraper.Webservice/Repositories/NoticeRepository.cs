@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using WebScraper.Database.Entities;
+using WebScraper.Webservice.Entities;
 using WebScraper.Webservice.Services;
 
 namespace WebScraper.Webservice.Repositories;
