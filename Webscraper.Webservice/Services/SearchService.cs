@@ -39,7 +39,7 @@ public class SearchService : ISearchService
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error: {e.Message} Data: {e.Data}");
+            Console.WriteLine($"Error: {e.Message}");
             
             return string.Empty;
         }

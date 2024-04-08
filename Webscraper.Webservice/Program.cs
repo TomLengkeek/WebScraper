@@ -14,6 +14,12 @@ try
 {
     var limit = configuration["SearchLimit"] ?? throw new Exception("SearchLimit should be present in appsettings.json");
     var scope = configuration["SearchScope"] ?? throw new Exception("SearchScope should be present in appsettings.json");
+    var searchOnlyLatestVersion = configuration["SearchOnlyLatestVersion"] ?? throw new Exception("SearchOnlyLatestVersion should be present in appsettings.json");
+    
+    //If StartDate is not present or is null take the current date as the start date
+    var startDate = string.IsNullOrEmpty(configuration["StartDate"])
+        ? DateTime.UtcNow
+        : DateTime.Parse(configuration["StartDate"]);
     
     var fields = configuration.GetSection("SearchFields").Get<List<Fields>>();
 
@@ -23,24 +29,21 @@ try
     }
     
     var requestFields = fields.Select((f) => f.RequestName).ToArray();
-
-    var page = 0;
+    
+    var page = 1;
+    var pagesLeft = 0;
+    
     //Main loop of the webscraper
     while (true)
     {
-        //If StartDate is not present or is null take the current date as the start date
-        var startDate = string.IsNullOrEmpty(configuration["StartDate"])
-            ? DateTime.UtcNow
-            : DateTime.Parse(configuration["StartDate"]);
-    
         var searchRequest = new SearchRequest
         {
             Query = $"publication-date={startDate.Year}{startDate.Month}{startDate.Date} SORT BY publication-number DESC",
-            Page = 1,
+            Page = page,
             Limit = int.Parse(limit),
             Scope = scope,
-            OnlyLatestVersions = true,
-            Fields = requestFields.ToArray(),
+            OnlyLatestVersions = bool.Parse(searchOnlyLatestVersion),
+            Fields = requestFields,
         };
 
         var result = await searchService.SearchAsync(searchRequest);
@@ -48,7 +51,22 @@ try
         if(string.IsNullOrEmpty(result))
             Console.WriteLine("Error: search request did not return anything");
     
-        var JsonObject = JToken.Parse(result);
+        var jsonObject = JToken.Parse(result);
+
+        var totalPageCountToken = jsonObject["TotalPageCount"];
+
+        if (totalPageCountToken == null)
+        {
+            Console.WriteLine("Error: Could not find totalPageCount using 0 instead");
+
+            pagesLeft = 0;
+        }
+        else
+        {
+            pagesLeft = totalPageCountToken.Value<int>() - 250;
+        }
+        
+        
     }
 }
 catch (Exception e)
