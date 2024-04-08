@@ -1,13 +1,11 @@
 ﻿using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using WebScraper.Webservice.Models;
-using WebScraper.Webservice.Services.Interfaces;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace WebScraper.Webservice.Services;
 
-public class SearchService : ISearchService
+public class SearchService
 {
     private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;

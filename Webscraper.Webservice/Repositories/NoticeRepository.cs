@@ -9,8 +9,7 @@ namespace WebScraper.Webservice.Repositories;
 public class NoticeRepository
 {
     private readonly ApplicationDbContext _dbContext;
-   
-
+    
     public NoticeRepository(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -30,12 +29,34 @@ public class NoticeRepository
 
         var parsingService = new ParsingService(officialLanguage, notice);
 
+        //Get the result notice and check the data
+        var resultNotice = ExtractData(parsingService);
+
+        if (resultNotice == null)
+            return;
+        
+        //Duplicate check
+        if (_dbContext.Notices.Any((n) => n.PublicationNumber == resultNotice.PublicationNumber))
+        {
+            Console.WriteLine("Error: Notice already saved in database");
+            return;
+        }
+
+        _dbContext.Notices.Add(resultNotice);
+
+        _dbContext.SaveChanges();
+        
+        Console.WriteLine($"Succesfully saved notice: {resultNotice.Id}"); 
+    }
+
+    private Notice? ExtractData(ParsingService parsingService)
+    {
         var publicationNumber = parsingService.GetValueFromToken("publication-number");
 
         if (string.IsNullOrEmpty(publicationNumber))
         {
             Console.WriteLine("Error: saving notice failed - no publication number");
-            return;
+            return null;
         }
         
         var title = parsingService.GetValueFromToken( "notice-title");
@@ -43,11 +64,10 @@ public class NoticeRepository
         if (string.IsNullOrEmpty(title))
         {
             Console.WriteLine("Error: saving notice failed - no title");
-            return;
+            return null;
         }
         
         var deadline = parsingService.GetValueFromToken( "deadline-receipt-request");
-
         
         if (string.IsNullOrEmpty(deadline))
             deadline = DateTime.MinValue.ToString();
@@ -78,15 +98,6 @@ public class NoticeRepository
             Country = country
         };
 
-        if (_dbContext.Notices.Any((n) => n.PublicationNumber == resultNotice.PublicationNumber))
-        {
-            Console.WriteLine("Error: Notice already saved in database");
-        }
-
-        _dbContext.Notices.Add(resultNotice);
-
-        _dbContext.SaveChanges();
-        
-        Console.WriteLine($"Succesfully saved notice: {resultNotice.Id}"); 
+        return resultNotice;
     }
 }

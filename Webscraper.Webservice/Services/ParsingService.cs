@@ -1,10 +1,8 @@
-﻿using System.Linq.Expressions;
-using Newtonsoft.Json.Linq;
-using WebScraper.Webservice.Services.Interfaces;
+﻿using Newtonsoft.Json.Linq;
 
 namespace WebScraper.Webservice.Services;
 
-public class ParsingService : IParsingService
+public class ParsingService
 {
     private readonly string _officialLanguage;
     private readonly JToken _notice;

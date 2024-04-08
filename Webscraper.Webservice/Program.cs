@@ -6,60 +6,9 @@ using WebScraper.Webservice.Models;
 using WebScraper.Webservice.Repositories;
 using WebScraper.Webservice.Services;
 
-try
+
+async Task RunAsync(DateTime date, int limit, int page, string searchScope, string searchOnlyLatestVersion, string[] fields, SearchService searchService, NoticeRepository noticeRepository)
 {
-    #region Configuration
-
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json")
-        .Build();
-    
-    var connectionString = configuration["DatabaseConnectionString"] ?? throw new Exception("DatabaseConnectionString should be present in appsettings.json");
-
-    var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
-        .UseSqlServer(connectionString)
-        .Options;
-
-    await using var dbContext = new ApplicationDbContext(optionsBuilder);
-
-    var noticeRepository = new NoticeRepository(dbContext);
-
-    var searchService = new SearchService(configuration);
-    
-    var limit = int.Parse(configuration["SearchLimit"] ?? throw new Exception("SearchLimit should be present in appsettings.json"));
-    var searchScope = configuration["SearchScope"] ?? throw new Exception("SearchScope should be present in appsettings.json");
-    var searchOnlyLatestVersion = configuration["SearchOnlyLatestVersion"] ?? throw new Exception("SearchOnlyLatestVersion should be present in appsettings.json");
-    
-    //If StartDate is not present or is null take the current date as the start date
-    var startDate = string.IsNullOrEmpty(configuration["StartDate"])
-        ? DateTime.UtcNow
-        : DateTime.Parse(configuration["StartDate"]);
-
-    var fields = new[]
-    {
-        "publication-number",
-        "place-of-performance",
-        "contract-nature",
-        "buyer-name",
-        "buyer-country",
-        "publication-date",
-        "deadline-receipt-request",
-        "notice-title",
-        "official-language",
-        "notice-type",
-        "description-lot"
-    };
-    
-    var page = 1;
-    var date = startDate;
-
-    #endregion
-    
-    //Main loop of the webscraper
-
-    #region Main
-
     while (true)
     {
         var searchRequest = new SearchRequest
@@ -121,9 +70,56 @@ try
         else
             page++;
     }
+}
 
-    #endregion
+try
+{
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json")
+        .Build();
     
+    var connectionString = configuration["DatabaseConnectionString"] ?? throw new Exception("DatabaseConnectionString should be present in appsettings.json");
+
+    var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseSqlServer(connectionString)
+        .Options;
+
+    await using var dbContext = new ApplicationDbContext(optionsBuilder);
+
+    var noticeRepository = new NoticeRepository(dbContext);
+
+    var searchService = new SearchService(configuration);
+    
+    var limit = int.Parse(configuration["SearchLimit"] ?? throw new Exception("SearchLimit should be present in appsettings.json"));
+    var searchScope = configuration["SearchScope"] ?? throw new Exception("SearchScope should be present in appsettings.json");
+    var searchOnlyLatestVersion = configuration["SearchOnlyLatestVersion"] ?? throw new Exception("SearchOnlyLatestVersion should be present in appsettings.json");
+    
+    //If StartDate is not present or is null take the current date as the start date
+    var startDate = string.IsNullOrEmpty(configuration["StartDate"])
+        ? DateTime.UtcNow
+        : DateTime.Parse(configuration["StartDate"]);
+
+    var fields = new[]
+    {
+        "publication-number",
+        "place-of-performance",
+        "contract-nature",
+        "buyer-name",
+        "buyer-country",
+        "publication-date",
+        "deadline-receipt-request",
+        "notice-title",
+        "official-language",
+        "notice-type",
+        "description-lot"
+    };
+    
+    var page = 1;
+    
+    //Start the main loop
+    await RunAsync(startDate, limit, page, searchScope, searchOnlyLatestVersion, fields, searchService,
+        noticeRepository);
 }
 catch (Exception e)
 {
