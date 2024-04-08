@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webscraper.Webservice", "Webscraper.Webservice\Webscraper.Webservice.csproj", "{FA4BF3CE-B72A-4189-B618-0FB1F7B968C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebScraper.Database", "WebScraper.Database\WebScraper.Database.csproj", "{61412D70-F5D7-4611-AB6D-2C117C7E5DBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA4BF3CE-B72A-4189-B618-0FB1F7B968C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA4BF3CE-B72A-4189-B618-0FB1F7B968C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA4BF3CE-B72A-4189-B618-0FB1F7B968C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA4BF3CE-B72A-4189-B618-0FB1F7B968C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61412D70-F5D7-4611-AB6D-2C117C7E5DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61412D70-F5D7-4611-AB6D-2C117C7E5DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61412D70-F5D7-4611-AB6D-2C117C7E5DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61412D70-F5D7-4611-AB6D-2C117C7E5DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
