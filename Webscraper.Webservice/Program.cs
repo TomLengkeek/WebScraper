@@ -7,13 +7,15 @@ using WebScraper.Webservice.Repositories;
 using WebScraper.Webservice.Services;
 
 
-async Task RunAsync(DateTime date, int limit, int page, string searchScope, string searchOnlyLatestVersion, string[] fields, SearchService searchService, NoticeRepository noticeRepository)
+async Task RunAsync(DateTime date, int limit, int page, string searchScope, string searchOnlyLatestVersion, string searchQuery, string[] fields, SearchService searchService, NoticeRepository noticeRepository)
 {
     while (true)
     {
+        var andString = !string.IsNullOrEmpty(searchQuery) ? "AND" : "";
+        
         var searchRequest = new SearchRequest
         {
-            Query = $"publication-date={date.ToString("yyyyMMdd")} SORT BY publication-number DESC",
+            Query = $"publication-date={date.ToString("yyyyMMdd")} {andString} {searchQuery} SORT BY publication-number DESC",
             Page = page,
             Limit = limit,
             Scope = searchScope,
@@ -43,32 +45,29 @@ async Task RunAsync(DateTime date, int limit, int page, string searchScope, stri
 
         foreach (var notice in notices)
         {
-            noticeRepository.SaveNotice(notice);
+           await noticeRepository.SaveNotice(notice);
         }
 
         var totalNoticeCountToken = jsonObject["totalNoticeCount"];
 
-        var noticesLeft = 0;
-        
-        if (totalNoticeCountToken == null)
+        if (totalNoticeCountToken == null || !int.TryParse(totalNoticeCountToken.ToString(), out int totalNoticeCount))
         {
-            Console.WriteLine("Error: Could not find totalPageCount using 0 instead");
+            Console.WriteLine("Error: Could not retrieve total notice count.");
+            break; 
+        }
+        
+        var noticesLeft = totalNoticeCount - (page * limit);
 
-            noticesLeft = 0;
-        }
-        else
-        {
-            noticesLeft = totalNoticeCountToken.Value<int>() - limit;
-        }
-        
-        //logic for moving through pages and dates
         if (noticesLeft <= 0)
         {
             date = date.AddDays(-1);
             page = 1;
         }
         else
+        {
+            // Update page
             page++;
+        }
     }
 }
 
@@ -94,6 +93,7 @@ try
     var limit = int.Parse(configuration["SearchLimit"] ?? throw new Exception("SearchLimit should be present in appsettings.json"));
     var searchScope = configuration["SearchScope"] ?? throw new Exception("SearchScope should be present in appsettings.json");
     var searchOnlyLatestVersion = configuration["SearchOnlyLatestVersion"] ?? throw new Exception("SearchOnlyLatestVersion should be present in appsettings.json");
+    var searchQuery = configuration["searchQuery"] ?? throw new Exception("SearchQuery should be present in appsettings.json");
     
     //If StartDate is not present or is null take the current date as the start date
     var startDate = string.IsNullOrEmpty(configuration["StartDate"])
@@ -118,7 +118,7 @@ try
     var page = 1;
     
     //Start the main loop
-    await RunAsync(startDate, limit, page, searchScope, searchOnlyLatestVersion, fields, searchService,
+    await RunAsync(startDate, limit, page, searchScope, searchOnlyLatestVersion, searchQuery,fields, searchService,
         noticeRepository);
 }
 catch (Exception e)

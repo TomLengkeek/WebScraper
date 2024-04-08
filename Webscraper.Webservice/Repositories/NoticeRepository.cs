@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using WebScraper.Database.Entities;
-using WebScraper.Webservice;
-using WebScraper.Webservice.Models;
 using WebScraper.Webservice.Services;
 
 namespace WebScraper.Webservice.Repositories;
@@ -15,7 +13,7 @@ public class NoticeRepository
         _dbContext = dbContext;
     }
 
-    public void SaveNotice(JToken notice)
+    public async Task SaveNotice(JToken notice)
     {
         var officialLanguageArray = notice["official-language"].Values<string>();
 
@@ -44,7 +42,7 @@ public class NoticeRepository
 
         _dbContext.Notices.Add(resultNotice);
 
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         
         Console.WriteLine($"Succesfully saved notice: {resultNotice.Id}"); 
     }
