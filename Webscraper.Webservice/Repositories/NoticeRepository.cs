@@ -2,26 +2,91 @@
 using WebScraper.Database.Entities;
 using WebScraper.Webservice;
 using WebScraper.Webservice.Models;
+using WebScraper.Webservice.Services;
 
 namespace WebScraper.Webservice.Repositories;
 
 public class NoticeRepository
 {
     private readonly ApplicationDbContext _dbContext;
+   
 
     public NoticeRepository(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public void SaveNotice(JToken notice, List<Fields> fields)
+    public void SaveNotice(JToken notice)
     {
-        var officialLanguage = notice["official-language"];
+        var officialLanguageArray = notice["official-language"].Values<string>();
 
+        var officialLanguage = officialLanguageArray.First();
+        
+        if (officialLanguage == null)
+        {
+            Console.WriteLine("Error: saving notice failed - no official language");
+            return;
+        }
 
-        var resultNotice = new Notice();
+        var parsingService = new ParsingService(officialLanguage, notice);
 
+        var publicationNumber = parsingService.GetValueFromToken("publication-number");
 
+        if (string.IsNullOrEmpty(publicationNumber))
+        {
+            Console.WriteLine("Error: saving notice failed - no publication number");
+            return;
+        }
+        
+        var title = parsingService.GetValueFromToken( "notice-title");
+
+        if (string.IsNullOrEmpty(title))
+        {
+            Console.WriteLine("Error: saving notice failed - no title");
+            return;
+        }
+        
+        var deadline = parsingService.GetValueFromToken( "deadline-receipt-request");
+
+        
+        if (string.IsNullOrEmpty(deadline))
+            deadline = DateTime.MinValue.ToString();
+
+        var publicationDate = parsingService.GetValueFromToken( "publication-date");
+        
+        if (string.IsNullOrEmpty(publicationDate))
+            deadline = DateTime.MinValue.ToString();
+
+        var buyerName = parsingService.GetValueFromToken( "buyer-name");
+        var buyerCountry = parsingService.GetValueFromToken( "buyer-country");
+        var contractNature = parsingService.GetValueFromToken( "contract-nature");
+        var type = parsingService.GetValueFromToken( "notice-type");
+        var country = parsingService.GetValueFromToken( "place-of-performance");
+        var description = parsingService.GetValueFromToken( "description-lot");
+
+        var resultNotice = new Notice()
+        {
+            PublicationNumber = publicationNumber,
+            Title = title,
+            Description = description,
+            Deadline = DateTime.Parse(deadline),
+            PublicationDate = DateTime.Parse(publicationDate),
+            BuyerName = buyerName,
+            BuyerCountry = buyerCountry,
+            ContractNature = contractNature,
+            Type = type,
+            Country = country
+        };
+
+        if (_dbContext.Notices.Any((n) => n.PublicationNumber == resultNotice.PublicationNumber))
+        {
+            Console.WriteLine("Error: Notice already saved in database");
+        }
+
+        _dbContext.Notices.Add(resultNotice);
+
+        _dbContext.SaveChanges();
+        
         Console.WriteLine($"Succesfully saved notice: {resultNotice.Id}"); 
     }
 }

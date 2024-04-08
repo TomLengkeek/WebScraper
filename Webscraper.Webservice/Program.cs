@@ -1,9 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using WebScraper.Database;
-using WebScraper.Database.Repositories;
 using WebScraper.Webservice;
 using WebScraper.Webservice.Models;
 using WebScraper.Webservice.Repositories;
@@ -19,18 +16,14 @@ try
         .Build();
     
     var connectionString = configuration["DatabaseConnectionString"] ?? throw new Exception("DatabaseConnectionString should be present in appsettings.json");
-    
-    var services = new ServiceCollection();
-    services.AddDbContext<ApplicationDbContext>(builder => builder.UseSqlServer(connectionString));
-    
-    var serviceProvider = services.BuildServiceProvider();
 
-    var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-    optionsBuilder.UseSqlServer(connectionString);
+    var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseSqlServer(connectionString)
+        .Options;
 
-    await using var dbContext = new ApplicationDbContext();
+    await using var dbContext = new ApplicationDbContext(optionsBuilder);
 
-    var noticeRepository = new NoticeRepository(serviceProvider.GetRequiredService<ApplicationDbContext>());
+    var noticeRepository = new NoticeRepository(dbContext);
 
     var searchService = new SearchService(configuration);
     
@@ -42,28 +35,26 @@ try
     var startDate = string.IsNullOrEmpty(configuration["StartDate"])
         ? DateTime.UtcNow
         : DateTime.Parse(configuration["StartDate"]);
-    
-    var fields = configuration.GetSection("SearchFields").Get<List<Fields>>();
 
-    if (fields == null || fields.Count <= 0)
+    var fields = new[]
     {
-        throw new Exception("SearchFields should be present in appsettings.json");
-    }
-    
-    //We need the official language for parsing
-    if (fields.All(f => f.RequestName != "official-language"))
-        fields.Add(new Fields()
-        {
-            RequestName = "official-language"
-        });
-    
-    var requestFields = fields.Select((f) => f.RequestName).ToArray();
+        "publication-number",
+        "place-of-performance",
+        "contract-nature",
+        "buyer-name",
+        "buyer-country",
+        "publication-date",
+        "deadline-receipt-request",
+        "notice-title",
+        "official-language",
+        "notice-type",
+        "description-lot"
+    };
     
     var page = 1;
     var date = startDate;
 
     #endregion
-    
     
     //Main loop of the webscraper
 
@@ -78,7 +69,7 @@ try
             Limit = limit,
             Scope = searchScope,
             OnlyLatestVersions = bool.Parse(searchOnlyLatestVersion),
-            Fields = requestFields,
+            Fields = fields,
         };
 
         var result = await searchService.SearchAsync(searchRequest);
@@ -103,7 +94,7 @@ try
 
         foreach (var notice in notices)
         {
-            noticeRepository.SaveNotice(notice, fields);
+            noticeRepository.SaveNotice(notice);
         }
 
         var totalNoticeCountToken = jsonObject["totalNoticeCount"];
@@ -129,7 +120,6 @@ try
         }
         else
             page++;
-        
     }
 
     #endregion
