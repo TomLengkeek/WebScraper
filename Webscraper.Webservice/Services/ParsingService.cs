@@ -12,6 +12,7 @@ public class ParsingService
         _officialLanguage = officialLanguage;
     }
     
+    //Get the value from jsonObject using our own custom logic
     public string GetValueFromToken(JToken jsonObject, string propertyName)
     {
         var property = jsonObject[propertyName];

@@ -26,8 +26,4 @@
       </None>
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\WebScraper.Database\WebScraper.Database.csproj" />
-    </ItemGroup>
-
 </Project>

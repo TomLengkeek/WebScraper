@@ -30,12 +30,14 @@ public class SearchService : ISearchService
             
             var response = await _httpClient.PostAsync(new Uri(_endpointUri), body);
             
+            var result = await response.Content.ReadAsStringAsync();
+            
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadAsStringAsync();
+                return result;
             }
 
-            throw new Exception($"Error occurred: {response.StatusCode}");
+            throw new Exception($"Error occurred: {result}");
         }
         catch (Exception e)
         {
