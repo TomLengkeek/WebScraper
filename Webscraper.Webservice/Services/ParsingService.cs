@@ -1,10 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Linq.Expressions;
+using Newtonsoft.Json.Linq;
 
 namespace WebScraper.Webservice.Services;
 
 public class ParsingService
 {
-    public string OfficialLanguage { get; set; }
+    private readonly string _officialLanguage;
+    
+    public ParsingService(string officialLanguage)
+    {
+        _officialLanguage = officialLanguage;
+    }
     
     public string GetValueFromToken(JToken jsonObject, string propertyName)
     {
@@ -12,20 +18,27 @@ public class ParsingService
         
         if (property == null)
             return string.Empty;
-        
-        var propertyValue = property.Value<string>();
-
-        if (propertyValue == null)
-            return string.Empty;
 
         var propertyType = property.Type;
 
         switch (propertyType)
         {
             case JTokenType.Array:
-                
-                
-                break;
+                var value = property.Value<Array>();
+
+                if (value == null || value.Length > 0)
+                    return string.Empty;
+
+                return value.GetValue(0)?.ToString() ?? string.Empty;
+            
+            case JTokenType.Object:
+                return GetValueFromToken(property, _officialLanguage.ToLower());
+
+            case JTokenType.String:
+                return property.Value<string>() ?? string.Empty;
+            
+            default:
+                return string.Empty;
         }
     }
 }
