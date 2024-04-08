@@ -23,6 +23,7 @@ async Task RunAsync(DateTime date, int limit, int page, string searchScope, stri
             Fields = fields,
         };
 
+        // Perform the search request to retrieve notices
         var result = await searchService.SearchAsync(searchRequest);
 
         if (string.IsNullOrEmpty(result))
@@ -32,6 +33,7 @@ async Task RunAsync(DateTime date, int limit, int page, string searchScope, stri
             continue;
         }
         
+        // Parse the Json result
         var jsonObject = JToken.Parse(result);
 
         var notices = jsonObject["notices"];
