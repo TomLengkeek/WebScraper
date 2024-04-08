@@ -50,5 +50,13 @@ public class Notice
     /// </summary>
     public string ContractNature { get; set; }
     
+    /// <summary>
+    /// The country where the notice is taking place
+    /// </summary>
+    public string Country { get; set; }
     
+    /// <summary>
+    /// The type of the notice
+    /// </summary>
+    public string Type { get; set; }
 }
