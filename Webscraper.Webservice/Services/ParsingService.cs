@@ -13,8 +13,8 @@ public class ParsingService
         _notice = notice;
     }
     
-    //Get the value from jsonObject using our own custom logic
-    public string GetValueFromToken(string propertyName, JToken? jsonObject = null)
+    // Get the value from jsonObject using our own custom logic.
+    public string? GetValueFromToken(string propertyName, JToken? jsonObject = null)
     {
         var property = jsonObject == null ? _notice[propertyName] : jsonObject[propertyName];
         

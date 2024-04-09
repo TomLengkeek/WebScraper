@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Globalization;
+using Newtonsoft.Json.Linq;
 using WebScraper.Webservice.Entities;
+using WebScraper.Webservice.Repositories.Interfaces;
 using WebScraper.Webservice.Services;
 
 namespace WebScraper.Webservice.Repositories;
 
-public class NoticeRepository
+public class NoticeRepository : INoticeRepository
 {
     private readonly ApplicationDbContext _dbContext;
     
@@ -15,9 +17,9 @@ public class NoticeRepository
 
     public async Task SaveNotice(JToken notice)
     {
-        var officialLanguageArray = notice["official-language"].Values<string>();
+        var officialLanguageArray = notice["official-language"]?.Values<string>();
 
-        var officialLanguage = officialLanguageArray.First();
+        var officialLanguage = officialLanguageArray?.FirstOrDefault();
         
         if (officialLanguage == null)
         {
@@ -27,13 +29,13 @@ public class NoticeRepository
 
         var parsingService = new ParsingService(officialLanguage, notice);
 
-        //Get the result notice and check the data
+        // Get the result notice and check the data.
         var resultNotice = ExtractData(parsingService);
 
         if (resultNotice == null)
             return;
         
-        //Duplicate check
+        // Duplicate check.
         if (_dbContext.Notices.Any((n) => n.PublicationNumber == resultNotice.PublicationNumber))
         {
             Console.WriteLine("Error: Notice already saved in database");
@@ -68,12 +70,12 @@ public class NoticeRepository
         var deadline = parsingService.GetValueFromToken( "deadline-receipt-request");
         
         if (string.IsNullOrEmpty(deadline))
-            deadline = DateTime.MinValue.ToString();
+            deadline = DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
 
         var publicationDate = parsingService.GetValueFromToken( "publication-date");
         
         if (string.IsNullOrEmpty(publicationDate))
-            deadline = DateTime.MinValue.ToString();
+            deadline = DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
 
         var buyerName = parsingService.GetValueFromToken( "buyer-name");
         var buyerCountry = parsingService.GetValueFromToken( "buyer-country");

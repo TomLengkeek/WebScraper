@@ -1,20 +1,18 @@
 ﻿using System.Text;
 using System.Text.Json;
 using WebScraper.Webservice.Models;
+using WebScraper.Webservice.Services.Interfaces;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace WebScraper.Webservice.Services;
 
-public class SearchService
+public class SearchService : ISearchService
 {
-    private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;
     private readonly string _endpointUri;
 
     public SearchService(IConfiguration configuration) 
     {
-        _configuration = configuration;
-        
         _httpClient = new HttpClient();
         
         _endpointUri = configuration["EndpointUri"] ?? throw new Exception("Default endpoint should be present in appsettings.json");

@@ -13,17 +13,17 @@ public class Notice
     /// <summary>
     /// Identifier from ted.europa.eu
     /// </summary>
-    public string PublicationNumber { get; set; }
+    public string? PublicationNumber { get; set; }
     
     /// <summary>
     /// Title of the notice
     /// </summary>
-    public string Title { get; set; }
+    public string? Title { get; set; }
     
     /// <summary>
     /// Description of the notice
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
     
     /// <summary>
     /// Deadline for receipt of tenders 
@@ -38,25 +38,25 @@ public class Notice
     /// <summary>
     /// Official name of the buyer
     /// </summary>
-    public string BuyerName { get; set; }
+    public string? BuyerName { get; set; }
     
     /// <summary>
     /// Country the buyer is located in
     /// </summary>
-    public string BuyerCountry { get; set; }
+    public string? BuyerCountry { get; set; }
     
     /// <summary>
     /// Main nature of the contract
     /// </summary>
-    public string ContractNature { get; set; }
+    public string? ContractNature { get; set; }
     
     /// <summary>
     /// The country where the notice is taking place
     /// </summary>
-    public string Country { get; set; }
+    public string? Country { get; set; }
     
     /// <summary>
     /// The type of the notice
     /// </summary>
-    public string Type { get; set; }
+    public string? Type { get; set; }
 }
